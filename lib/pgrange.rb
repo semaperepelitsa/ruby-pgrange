@@ -55,8 +55,16 @@ class PGRange
     @lower_inc
   end
 
+  def lower_inc
+    @lower_inc ? "[" : "("
+  end
+
   def upper_inc?
     @upper_inc
+  end
+
+  def upper_inc
+    @upper_inc ? "]" : ")"
   end
 
   def empty?
@@ -103,10 +111,7 @@ class PGRange
       urng = self.upper_inc? ? self : other
     end
 
-    bounds = ""
-    bounds << (lrng.lower_inc? ? "[" : "(")
-    bounds << (urng.upper_inc? ? "]" : ")")
-
+    bounds = lrng.lower_inc + urng.upper_inc
     self.class.new(lrng.lower, urng.upper, bounds)
   end
 
@@ -132,10 +137,7 @@ class PGRange
       urng = self.upper_inc? ? other : self
     end
 
-    bounds = ""
-    bounds << (lrng.lower_inc? ? "[" : "(")
-    bounds << (urng.upper_inc? ? "]" : ")")
-
+    bounds = lrng.lower_inc + urng.upper_inc
     lower = lrng.lower
     upper = urng.upper
 
@@ -160,11 +162,11 @@ class PGRange
     return "empty" if @empty
     res = ""
 
-    res << (@lower_inc ? "[" : "(")
+    res << lower_inc
     res << @lower.inspect unless @lower_inf
     res << ","
     res << @upper.inspect unless @upper_inf
-    res << (@upper_inc ? "]" : ")")
+    res << upper_inc
   end
   alias_method :inspect, :to_s
 
