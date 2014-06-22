@@ -67,6 +67,19 @@ class PGRange
     lower && upper
   end
 
+  # union
+  def + other
+    other = other.to_pgrange
+    lrng = [self, other].min_by(&:lower)
+    urng = [self, other].max_by(&:upper)
+
+    bounds = ""
+    bounds << (lrng.lower_inc? ? "[" : "(")
+    bounds << (urng.upper_inc? ? "]" : ")")
+
+    PGRange.new(lrng.lower, urng.upper, bounds)
+  end
+
   def == other
     other.kind_of?(self.class) &&
     self.empty? == other.empty? &&
@@ -89,7 +102,18 @@ class PGRange
   end
   alias_method :inspect, :to_s
 
+  def to_pgrange
+    self
+  end
+
   # Range compatibility
   alias_method :begin, :lower
   alias_method :end, :upper
+end
+
+class Range
+  def to_pgrange
+    bounds = self.exclude_end? ? "[)" : "[]"
+    PGRange.new(self.begin, self.end, bounds)
+  end
 end

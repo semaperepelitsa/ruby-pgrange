@@ -73,4 +73,10 @@ class RangeTest < Minitest::Test
 
     assert_equal PGRange.new(1, 1, '[]'), PGRange.new(1, 1, '[]')
   end
+
+  def test_union
+    a = PGRange.new(5, 15)
+    assert_equal PGRange.new(5, 20), a + PGRange.new(10, 20)
+    assert_equal PGRange.new(5, 20), a + (10...20)
+  end
 end
