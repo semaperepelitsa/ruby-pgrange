@@ -61,6 +61,16 @@ class PGRange
     lower && upper
   end
 
+  def == other
+    other.kind_of?(self.class) &&
+    self.empty? == other.empty? &&
+    self.lower == other.lower &&
+    self.upper == other.upper &&
+    self.lower_inc? == other.lower_inc? &&
+    self.upper_inc? == other.upper_inc?
+  end
+  alias_method :eql?, :==
+
   def to_s
     return "empty" if @empty
     res = ""

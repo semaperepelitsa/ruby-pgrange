@@ -55,4 +55,16 @@ class RangeTest < Minitest::Test
     assert_includes rng, -100
     refute_includes rng, 1
   end
+
+  def test_eq
+    assert_equal PGRange.new(1, 3), PGRange.new(1, 3)
+    refute_equal PGRange.new(1, 4), PGRange.new(1, 3)
+    refute_equal PGRange.new(1, 3, '[]'), PGRange.new(1, 3, '[)')
+
+    assert_equal PGRange.new(nil, 3), PGRange.new(nil, 3)
+    assert_equal PGRange.new(nil, nil), PGRange.new(nil, nil)
+    refute_equal PGRange.new(nil, 4), PGRange.new(nil, 3)
+
+    assert_equal PGRange.new(1, 1, '[]'), PGRange.new(1, 1, '[]')
+  end
 end
