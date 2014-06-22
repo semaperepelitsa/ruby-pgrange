@@ -14,10 +14,20 @@ class RangeBasicTest < Minitest::Test
     assert_equal "[1,3)", rng.to_s
   end
 
+  def test_normalize
+    rng = PGRange.new(0, 2, '(]')
+    assert_equal 1, rng.lower
+    assert_equal 3, rng.upper
+    assert rng.lower_inc?
+    refute rng.upper_inc?
+    refute rng.empty?
+    assert_equal "[1,3)", rng.to_s
+  end
+
   def test_single
     rng = PGRange.new(1, 1, '[]')
     refute rng.empty?
-    assert_equal "[1,1]", rng.to_s
+    assert_equal "[1,2)", rng.to_s
   end
 
   def test_empty

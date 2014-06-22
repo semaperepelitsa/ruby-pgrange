@@ -25,6 +25,16 @@ class PGRange
       end
     end
 
+    if !@lower_inc && lower.respond_to?(:succ)
+      lower = lower.succ
+      @lower_inc = true
+    end
+
+    if @upper_inc && upper.respond_to?(:succ)
+      upper = upper.succ
+      @upper_inc = false
+    end
+
     # has no points
     @empty = lower == upper && !(@lower_inc && @upper_inc) && !(@lower_inf || @upper_inf)
 
