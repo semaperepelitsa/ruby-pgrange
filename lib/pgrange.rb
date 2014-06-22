@@ -6,7 +6,7 @@ class PGRange
     '()' => [false, false]
   }
 
-  def initialize(lower, upper, bounds)
+  def initialize(lower, upper, bounds = '[)')
     @lower_inc, @upper_inc = BOUNDS.fetch(bounds) do
       values = BOUNDS.keys.map(&:inspect).join(', ')
       raise ArgumentError, "bounds must be one of #{values}"
@@ -14,6 +14,10 @@ class PGRange
 
     @lower_inf = lower.nil? and @lower_inc = false
     @upper_inf = upper.nil? and @upper_inc = false
+
+    if !(@lower_inf || @upper_inf) && (lower <=> upper) == nil
+      raise ArgumentError, "bad value for range"
+    end
 
     # has no points
     @empty = lower == upper && !(@lower_inc && @upper_inc)
