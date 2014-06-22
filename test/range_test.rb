@@ -36,4 +36,17 @@ class RangeTest < Minitest::Test
     rng = PGRange.new(1, 1, '[]')
     refute rng.empty?
   end
+
+  def test_inf
+    rng = PGRange.new(nil, 1, '[)')
+    assert rng.lower_inf?
+    refute rng.upper_inf?
+    refute rng.lower_inc?
+    refute rng.upper_inc?
+    assert_equal "(,1)", rng.to_s
+
+    assert_includes rng, 0
+    assert_includes rng, -100
+    refute_includes rng, 1
+  end
 end

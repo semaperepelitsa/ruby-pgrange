@@ -7,11 +7,13 @@ class PGRange
   }
 
   def initialize(lower, upper, bounds)
-    @bounds = bounds
     @lower_inc, @upper_inc = BOUNDS.fetch(bounds) do
       values = BOUNDS.keys.map(&:inspect).join(', ')
       raise ArgumentError, "bounds must be one of #{values}"
     end
+
+    @lower_inf = lower.nil? and @lower_inc = false
+    @upper_inf = upper.nil? and @upper_inc = false
 
     # has no points
     @empty = lower == upper && !(@lower_inc && @upper_inc)
@@ -41,17 +43,29 @@ class PGRange
     @empty
   end
 
+  def lower_inf?
+    @lower_inf
+  end
+
+  def upper_inf?
+    @upper_inf
+  end
+
   def include? obj
-    lower = @lower_inc ? obj >= @lower : obj > @lower
-    upper = @upper_inc ? obj <= @upper : obj < @upper
+    lower = @lower_inf || (@lower_inc ? obj >= @lower : obj > @lower)
+    upper = @upper_inf || (@upper_inc ? obj <= @upper : obj < @upper)
     lower && upper
   end
 
   def to_s
     return "empty" if @empty
-    inner = "#{@lower.inspect},#{@upper.inspect}"
-    outer = @bounds.dup
-    outer.insert 1, inner
+    res = ""
+
+    res << (@lower_inc ? "[" : "(")
+    res << @lower.inspect unless @lower_inf
+    res << ","
+    res << @upper.inspect unless @upper_inf
+    res << (@upper_inc ? "]" : ")")
   end
   alias_method :inspect, :to_s
 
