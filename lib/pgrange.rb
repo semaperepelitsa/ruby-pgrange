@@ -69,7 +69,7 @@ class PGRange
 
   # union
   def + other
-    other = other.to_pgrange
+    other = convert(other)
     lrng = [self, other].min_by(&:lower)
     urng = [self, other].max_by(&:upper)
 
@@ -77,7 +77,7 @@ class PGRange
     bounds << (lrng.lower_inc? ? "[" : "(")
     bounds << (urng.upper_inc? ? "]" : ")")
 
-    PGRange.new(lrng.lower, urng.upper, bounds)
+    self.class.new(lrng.lower, urng.upper, bounds)
   end
 
   def == other
@@ -109,6 +109,16 @@ class PGRange
   # Range compatibility
   alias_method :begin, :lower
   alias_method :end, :upper
+
+  private
+
+  def convert(other)
+    if other.respond_to?(:to_pgrange)
+      other.to_pgrange
+    else
+      raise TypeError, "no implicit conversion of #{other.class} into #{self.class}"
+    end
+  end
 end
 
 class Range
