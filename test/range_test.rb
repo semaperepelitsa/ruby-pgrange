@@ -85,4 +85,10 @@ class RangeTest < Minitest::Test
     assert_equal PGRange.new(5, 20), a + PGRange.new(10, 20)
     assert_equal PGRange.new(5, 20), a + (10...20)
   end
+
+  def test_intersection
+    a = PGRange.new(5, 15)
+    b = PGRange.new(10, 20)
+    assert_equal PGRange.new(10, 15), a * b
+  end
 end

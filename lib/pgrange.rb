@@ -80,6 +80,19 @@ class PGRange
     self.class.new(lrng.lower, urng.upper, bounds)
   end
 
+  # intersection
+  def * other
+    other = convert(other)
+    lrng = [self, other].max_by(&:lower)
+    urng = [self, other].min_by(&:upper)
+
+    bounds = ""
+    bounds << (lrng.lower_inc? ? "[" : "(")
+    bounds << (urng.upper_inc? ? "]" : ")")
+
+    self.class.new(lrng.lower, urng.upper, bounds)
+  end
+
   def == other
     other.kind_of?(self.class) &&
     self.empty? == other.empty? &&
