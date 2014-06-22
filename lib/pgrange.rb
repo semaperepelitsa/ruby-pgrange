@@ -1,3 +1,9 @@
+# A port of Postgres range type.
+# Features:
+# Both bound inclusion
+# Infinite bounds
+# Empty range
+# Operations: union, intersection
 class PGRange
   BOUNDS = {
     '[]' => [true, true],
@@ -6,6 +12,28 @@ class PGRange
     '()' => [false, false]
   }
 
+  # Standard range:
+  #   PGRange.new 1, 3 #=> [1,3)
+  #
+  # Range is normalized if discrete:
+  #   PGRange.new 1, 3, '(]' #=> [2,4)
+  #   PGRange.new 1, 3, '[]' #=> [1,4)
+  #   PGRange.new 1, 3, '()' #=> [2,3)
+  #
+  # Non-discrete (Float) range:
+  #   PGRange.new 1.1, 1.9, '()' #=> (1.1,1.9)
+  #
+  # Empty range:
+  #   PGRange.new 1, 1 #=> empty
+  #
+  # Pass nil to have infinite bound:
+  #   PGRange.new 1,   nil #=> [1,)
+  #   PGRange.new nil, 1   #=> (,1)
+  #   PGRange.new nil, nil #=> (,)
+  #
+  # Infinite bound is always exclusive.
+  #   PGRange.new 1, nil, '[]' #=> [1,)
+  #
   def initialize(lower, upper, bounds = '[)')
     @lower_inc, @upper_inc = BOUNDS.fetch(bounds) do
       values = BOUNDS.keys.map(&:inspect).join(', ')
@@ -25,12 +53,13 @@ class PGRange
       end
     end
 
-    if !@lower_inc && lower.respond_to?(:succ)
+    # Time is no longer discrete and has deprecated #succ
+    if !@lower_inc && lower.respond_to?(:succ) && !lower.kind_of?(Time)
       lower = lower.succ
       @lower_inc = true
     end
 
-    if @upper_inc && upper.respond_to?(:succ)
+    if @upper_inc && upper.respond_to?(:succ) && !lower.kind_of?(Time)
       upper = upper.succ
       @upper_inc = false
     end
@@ -67,6 +96,10 @@ class PGRange
     @upper_inc ? "]" : ")"
   end
 
+  # The range is empty when it includes no objects.
+  # Example:
+  #   PGRange.new(1, 1).empty? #=> true
+  #   PGRange.new(1, 2).empty? #=> false
   def empty?
     @empty
   end
@@ -79,6 +112,13 @@ class PGRange
     @upper_inf
   end
 
+  # Does the range include this object?
+  # Example:
+  #   rng = PGRange.new(1, 3, '[)') # => [1,3)
+  #   rng.include?(0) #=> false
+  #   rng.include?(1) #=> true
+  #   rng.include?(2) #=> true
+  #   rng.include?(3) #=> false
   def include? obj
     return false if @empty
     lower = @lower_inf || (@lower_inc ? obj >= @lower : obj > @lower)
@@ -86,7 +126,7 @@ class PGRange
     lower && upper
   end
 
-  # union
+  # Find union with other range.
   def + other
     other = convert(other)
 
@@ -119,7 +159,7 @@ class PGRange
     self.class.new(lrng.lower, urng.upper, bounds)
   end
 
-  # intersection
+  # Find intersection with other range.
   def * other
     other = convert(other)
 
