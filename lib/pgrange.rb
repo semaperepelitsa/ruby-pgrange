@@ -70,8 +70,28 @@ class PGRange
   # union
   def + other
     other = convert(other)
-    lrng = [self, other].min_by(&:lower)
-    urng = [self, other].max_by(&:upper)
+
+    if other.lower >= self.upper || (other.lower_inc? && self.upper_inc? && other.lower != self.upper)
+      raise ArgumentError, "result of range union would not be contiguous"
+    end
+
+    case other.lower <=> self.lower
+    when -1
+      lrng = other
+    when 1
+      lrng = self
+    when 0
+      lrng = self.lower_inc? ? self : other
+    end
+
+    case other.upper <=> self.upper
+    when 1
+      urng = other
+    when -1
+      urng = self
+    when 0
+      urng = self.upper_inc? ? self : other
+    end
 
     bounds = ""
     bounds << (lrng.lower_inc? ? "[" : "(")
