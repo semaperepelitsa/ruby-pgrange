@@ -106,11 +106,40 @@ end
 
 class RangeOperationsTest < Minitest::Test
   def test_include
-    rng = PGRange.new(1, 3, '[)')
+    rng = PGRange.new(1, 3)
     assert rng.include?(1)
     assert rng.include?(2)
     refute rng.include?(3)
     refute rng.include?(0)
+  end
+
+  def test_include_upper_inf
+    rng = PGRange.new(1, nil)
+    assert rng.include?(1)
+    assert rng.include?(100)
+    refute rng.include?(0)
+  end
+
+  def test_include_lower_inf
+    rng = PGRange.new(nil, 1)
+    refute rng.include?(1)
+    refute rng.include?(2)
+    assert rng.include?(0)
+    assert rng.include?(-100)
+  end
+
+  def test_include_inf
+    rng = PGRange.new(nil, nil)
+    assert rng.include?(-100)
+    assert rng.include?(0)
+    assert rng.include?(100)
+  end
+
+  def test_include_empty
+    rng = PGRange.new(1, 1)
+    refute rng.include?(1)
+    refute rng.include?(0)
+    refute rng.include?(2)
   end
 
   def test_bad_operation

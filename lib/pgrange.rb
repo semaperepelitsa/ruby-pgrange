@@ -80,6 +80,7 @@ class PGRange
   end
 
   def include? obj
+    return false if @empty
     lower = @lower_inf || (@lower_inc ? obj >= @lower : obj > @lower)
     upper = @upper_inf || (@upper_inc ? obj <= @upper : obj < @upper)
     lower && upper
