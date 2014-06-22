@@ -24,6 +24,12 @@ class RangeTest < Minitest::Test
     end
   end
 
+  def test_impossible
+    assert_raises ArgumentError do
+      PGRange.new(5, 1)
+    end
+  end
+
   def test_to_s
     rng = PGRange.new(1, 3, '[)')
     assert_equal "[1,3)", rng.to_s

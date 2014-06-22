@@ -15,8 +15,14 @@ class PGRange
     @lower_inf = lower.nil? and @lower_inc = false
     @upper_inf = upper.nil? and @upper_inc = false
 
-    if !(@lower_inf || @upper_inf) && (lower <=> upper) == nil
-      raise ArgumentError, "bad value for range"
+    unless @lower_inf || @upper_inf
+      if (lower <=> upper) == nil
+        raise ArgumentError, "bad value for range"
+      end
+
+      unless lower <= upper
+        raise ArgumentError, "range lower bound must be less than or equal to range upper bound"
+      end
     end
 
     # has no points
