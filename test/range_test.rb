@@ -138,7 +138,11 @@ class RangeOperationsTest < Minitest::Test
 
   def test_intersection
     a = PGRange.new(5, 15)
-    b = PGRange.new(10, 20)
-    assert_equal PGRange.new(10, 15), a * b
+    assert_equal PGRange.new(10, 15), a * PGRange.new(10, 20)
+
+    assert_empty a * PGRange.new(15, 20)
+    assert_empty a * PGRange.new(16, 20)
+
+    assert_equal PGRange.new(15, 15, '[]'), PGRange.new(5, 15, '[]') * PGRange.new(15, 20)
   end
 end

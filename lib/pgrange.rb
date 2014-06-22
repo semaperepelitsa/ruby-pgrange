@@ -103,14 +103,37 @@ class PGRange
   # intersection
   def * other
     other = convert(other)
-    lrng = [self, other].max_by(&:lower)
-    urng = [self, other].min_by(&:upper)
+
+    case other.lower <=> self.lower
+    when -1
+      lrng = self
+    when 1
+      lrng = other
+    when 0
+      lrng = self.lower_inc? ? other : self
+    end
+
+    case other.upper <=> self.upper
+    when 1
+      urng = self
+    when -1
+      urng = other
+    when 0
+      urng = self.upper_inc? ? other : self
+    end
 
     bounds = ""
     bounds << (lrng.lower_inc? ? "[" : "(")
     bounds << (urng.upper_inc? ? "]" : ")")
 
-    self.class.new(lrng.lower, urng.upper, bounds)
+    lower = lrng.lower
+    upper = urng.upper
+
+    if lower > upper
+      upper = lower
+    end
+
+    self.class.new(lower, upper, bounds)
   end
 
   def == other
