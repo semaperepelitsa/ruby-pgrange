@@ -3,13 +3,76 @@ require "minitest/autorun"
 
 require "pgrange"
 
-class RangeTest < Minitest::Test
-  def test_include
-    rng = PGRange.new(1, 3, '[)')
-    assert rng.include?(1)
-    assert rng.include?(2)
-    refute rng.include?(3)
-    refute rng.include?(0)
+class RangeBasicTest < Minitest::Test
+  def test_default
+    rng = PGRange.new(1, 3)
+    assert_equal 1, rng.lower
+    assert_equal 3, rng.upper
+    assert rng.lower_inc?
+    refute rng.upper_inc?
+    refute rng.empty?
+    assert_equal "[1,3)", rng.to_s
+  end
+
+  def test_single
+    rng = PGRange.new(1, 1, '[]')
+    refute rng.empty?
+    assert_equal "[1,1]", rng.to_s
+  end
+
+  def test_empty
+    rng = PGRange.new(1, 1, '[)')
+    assert rng.empty?
+    assert_equal nil, rng.upper
+    assert_equal nil, rng.lower
+    refute rng.lower_inc?
+    refute rng.upper_inc?
+    assert_equal "empty", rng.to_s
+  end
+
+  def test_lower_inf
+    rng = PGRange.new(nil, 1, '[)')
+
+    assert_nil rng.lower
+    assert_equal 1, rng.upper
+
+    assert rng.lower_inf?
+    refute rng.upper_inf?
+
+    refute rng.lower_inc?
+    refute rng.upper_inc?
+
+    assert_equal "(,1)", rng.to_s
+  end
+
+  def test_upper_inf
+    rng = PGRange.new(1, nil, '[]')
+
+    assert_equal 1, rng.lower
+    assert_nil rng.upper
+
+    refute rng.lower_inf?
+    assert rng.upper_inf?
+
+    assert rng.lower_inc?
+    refute rng.upper_inc?
+
+    assert_equal "[1,)", rng.to_s
+  end
+
+  def test_inf
+    rng = PGRange.new(nil, nil, '[]')
+
+    assert_nil rng.lower
+    assert_nil rng.upper
+
+    assert rng.lower_inf?
+    assert rng.upper_inf?
+
+    refute rng.lower_inc?
+    refute rng.upper_inc?
+
+    assert_equal "(,)", rng.to_s
   end
 
   def test_wrong_bounds
@@ -29,43 +92,21 @@ class RangeTest < Minitest::Test
       PGRange.new(5, 1)
     end
   end
+end
+
+class RangeOperationsTest < Minitest::Test
+  def test_include
+    rng = PGRange.new(1, 3, '[)')
+    assert rng.include?(1)
+    assert rng.include?(2)
+    refute rng.include?(3)
+    refute rng.include?(0)
+  end
 
   def test_bad_operation
     assert_raises TypeError do
       PGRange.new(1, 2) + "hello"
     end
-  end
-
-  def test_to_s
-    rng = PGRange.new(1, 3, '[)')
-    assert_equal "[1,3)", rng.to_s
-    assert_equal "[1,3)", rng.inspect
-  end
-
-  def test_empty
-    rng = PGRange.new(1, 1, '[)')
-    assert rng.empty?
-    assert_equal nil, rng.upper
-    assert_equal nil, rng.lower
-    refute rng.lower_inc?
-    refute rng.upper_inc?
-    assert_equal "empty", rng.to_s
-
-    rng = PGRange.new(1, 1, '[]')
-    refute rng.empty?
-  end
-
-  def test_inf
-    rng = PGRange.new(nil, 1, '[)')
-    assert rng.lower_inf?
-    refute rng.upper_inf?
-    refute rng.lower_inc?
-    refute rng.upper_inc?
-    assert_equal "(,1)", rng.to_s
-
-    assert_includes rng, 0
-    assert_includes rng, -100
-    refute_includes rng, 1
   end
 
   def test_eq

@@ -26,7 +26,7 @@ class PGRange
     end
 
     # has no points
-    @empty = lower == upper && !(@lower_inc && @upper_inc)
+    @empty = lower == upper && !(@lower_inc && @upper_inc) && !(@lower_inf || @upper_inf)
 
     if @empty
       @lower_inc = false
