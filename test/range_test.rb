@@ -105,41 +105,41 @@ class RangeBasicTest < Minitest::Test
 end
 
 class RangeOperationsTest < Minitest::Test
-  def test_include
+  def test_cover
     rng = PGRange.new(1, 3)
-    assert rng.include?(1)
-    assert rng.include?(2)
-    refute rng.include?(3)
-    refute rng.include?(0)
+    assert rng.cover?(1)
+    assert rng.cover?(2)
+    refute rng.cover?(3)
+    refute rng.cover?(0)
   end
 
-  def test_include_upper_inf
+  def test_cover_upper_inf
     rng = PGRange.new(1, nil)
-    assert rng.include?(1)
-    assert rng.include?(100)
-    refute rng.include?(0)
+    assert rng.cover?(1)
+    assert rng.cover?(100)
+    refute rng.cover?(0)
   end
 
-  def test_include_lower_inf
+  def test_cover_lower_inf
     rng = PGRange.new(nil, 1)
-    refute rng.include?(1)
-    refute rng.include?(2)
-    assert rng.include?(0)
-    assert rng.include?(-100)
+    refute rng.cover?(1)
+    refute rng.cover?(2)
+    assert rng.cover?(0)
+    assert rng.cover?(-100)
   end
 
-  def test_include_inf
+  def test_cover_inf
     rng = PGRange.new(nil, nil)
-    assert rng.include?(-100)
-    assert rng.include?(0)
-    assert rng.include?(100)
+    assert rng.cover?(-100)
+    assert rng.cover?(0)
+    assert rng.cover?(100)
   end
 
-  def test_include_empty
+  def test_cover_empty
     rng = PGRange.new(1, 1)
-    refute rng.include?(1)
-    refute rng.include?(0)
-    refute rng.include?(2)
+    refute rng.cover?(1)
+    refute rng.cover?(0)
+    refute rng.cover?(2)
   end
 
   def test_bad_operation

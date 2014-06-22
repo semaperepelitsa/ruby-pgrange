@@ -115,11 +115,11 @@ class PGRange
   # Does the range include this object?
   # Example:
   #   rng = PGRange.new(1, 3, '[)') # => [1,3)
-  #   rng.include?(0) #=> false
-  #   rng.include?(1) #=> true
-  #   rng.include?(2) #=> true
-  #   rng.include?(3) #=> false
-  def include? obj
+  #   rng.cover?(0) #=> false
+  #   rng.cover?(1) #=> true
+  #   rng.cover?(2) #=> true
+  #   rng.cover?(3) #=> false
+  def cover? obj
     return false if @empty
     lower = @lower_inf || (@lower_inc ? obj >= @lower : obj > @lower)
     upper = @upper_inf || (@upper_inc ? obj <= @upper : obj < @upper)
