@@ -90,6 +90,9 @@ class PGRange
   def + other
     other = convert(other)
 
+    return other if self.empty?
+    return self if other.empty?
+
     if other.lower >= self.upper || (other.lower_inc? && self.upper_inc? && other.lower != self.upper)
       raise ArgumentError, "result of range union would not be contiguous"
     end
@@ -119,6 +122,9 @@ class PGRange
   # intersection
   def * other
     other = convert(other)
+
+    return self if self.empty?
+    return other if other.empty?
 
     case other.lower <=> self.lower
     when -1

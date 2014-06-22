@@ -164,7 +164,8 @@ class RangeOperationsTest < Minitest::Test
     a = PGRange.new(5, 15)
     assert_equal PGRange.new(5, 20), a + PGRange.new(10, 20)
     assert_equal PGRange.new(5, 20), a + (10...20)
-
+    assert_equal a, a + PGRange.new(1, 1)
+    assert_equal a, PGRange.new(1, 1) + a
 
     assert_raises ArgumentError do
       a + PGRange.new(16, 20)
@@ -181,6 +182,8 @@ class RangeOperationsTest < Minitest::Test
 
     assert_empty a * PGRange.new(15, 20)
     assert_empty a * PGRange.new(16, 20)
+    assert_empty a * PGRange.new(1, 1)
+    assert_empty PGRange.new(1, 1) * a
 
     assert_equal PGRange.new(15, 15, '[]'), PGRange.new(5, 15, '[]') * PGRange.new(15, 20)
   end
