@@ -125,6 +125,7 @@ class PGRange
     upper = @upper_inf || (@upper_inc ? obj <= @upper : obj < @upper)
     lower && upper
   end
+  alias_method :===, :cover?
 
   # Find union with other range.
   def + other
@@ -224,6 +225,10 @@ class PGRange
   # Range compatibility
   alias_method :begin, :lower
   alias_method :end, :upper
+
+  def exclude_end?
+    !upper_inc?
+  end
 
   private
 
